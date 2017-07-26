@@ -1,4 +1,4 @@
-#Image Classification
+# Image Classification
 
 In this project, the program classifies images from the CIFAR-10 dataset.
 The dataset consists of airplanes, dogs, cats,and other objects.
@@ -19,3 +19,9 @@ To run
 ```
 python CNN.py
 ```
+
+
+## Authors
+
+* **Tianwen Chu** - *Initial work*
+

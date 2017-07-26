@@ -1,0 +1,21 @@
+#Image Classification
+
+In this project, the program classifies images from the CIFAR-10 dataset.
+The dataset consists of airplanes, dogs, cats,and other objects.
+
+## Getting Start
+Program using python tensorflow library.
+
+### Prerequisites
+Please use pip install or conda install to prepare dependencies shown as below:
+python 3.5
+sklearn
+pandas
+numpy
+pickle
+
+To run
+
+```
+python CNN.py
+```

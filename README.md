@@ -17,3 +17,6 @@ pickle
 ```
 python CNN.py
 ```
+## Authors
+
+* **Tianwen Chu** - *Initial work*

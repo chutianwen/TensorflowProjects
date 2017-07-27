@@ -6,7 +6,7 @@ In this project, the program classifies images from the CIFAR-10 dataset. The da
 After preprocessing, the features are normalized and labels are one-hot encoded. 
 
 ### Prerequisite
-Please use pip install or conda install to prepare dependencies shown as below:
+Please use `pip install` or `conda install` to prepare dependencies shown as below:
 - python 3.5
 - sklearn
 - pandas

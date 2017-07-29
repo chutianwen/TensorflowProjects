@@ -6,6 +6,7 @@ from urllib.request import urlretrieve
 import tarfile
 import numpy as np
 
+
 class DataCenter:
 
     cifar10_dataset_folder_path = 'cifar-10-batches-py'
@@ -54,7 +55,7 @@ class DataCenter:
         :param sample_id:
         :return:
         """
-        helper.display_stats(cifar10_dataset_folder_path, batch_id, sample_id)
+        helper.display_stats(DataCenter.cifar10_dataset_folder_path, batch_id, sample_id)
 
     @staticmethod
     def normalize(images):

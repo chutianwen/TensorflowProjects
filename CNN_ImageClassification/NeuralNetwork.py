@@ -7,12 +7,13 @@ import os
 import shutil
 import random
 
+
 class NeuralNetwork:
 
     # Training parameters
     epochs = 20
     batch_size = 128
-    keep_probability = 0.75
+    keep_probability = 0.5
 
     def neural_net_image_input(self, image_shape):
         """
@@ -109,9 +110,9 @@ class NeuralNetwork:
         : return: Tensor that represents logits
         """
         conv_paras = {
-            'conv_num_outputs': [32, 24, 16],
-            'conv_ksize': [[5, 5], [4, 4], [3, 3]],
-            'conv_strides': [[1, 1], [1, 1], [1, 1]],
+            'conv_num_outputs': [8, 4, 4],
+            'conv_ksize': [[5, 5], [5, 5], [5, 5]],
+            'conv_strides': [[1, 1], [1, 1], [2, 2]],
             'pool_ksize': [[2, 2], [2, 2], [2, 2]],
             'pool_strides': [[2, 2], [2, 2], [2, 2]]
         }
@@ -130,8 +131,9 @@ class NeuralNetwork:
 
         fully_conn0 = self.flatten(conv)
 
+        # 422-960-480-480-480-480- 100
         fully_connected_paras = {
-            'outputs': [512, 1024]
+            'outputs': [256, 128]
         }
         fully_connected_paras = pd.DataFrame(fully_connected_paras)
         fully_conn = None
@@ -222,13 +224,14 @@ class NeuralNetwork:
                                                         mode='rb'))
 
         loaded_graph = tf.Graph()
+
+
         with tf.device('/gpu:0'):
             with tf.Session(graph=loaded_graph) as sess: #config=tf.ConfigProto(log_device_placement=True)
 
                 try:
                     loader = tf.train.import_meta_graph(save_model_path + '.meta')
                     loader.restore(sess, save_model_path)
-
                     x = loaded_graph.get_tensor_by_name("x:0")
                     y = loaded_graph.get_tensor_by_name("y:0")
                     keep_prob = loaded_graph.get_tensor_by_name("keep_prob:0")
@@ -260,6 +263,8 @@ class NeuralNetwork:
     @TaskReporter("Train on whole batches")
     def train_on_whole_data(self):
         save_model_path = './savedModel/cnn-model'
+        dir_processed_data = "./ProcessedData"
+
         valid_features, valid_labels = pickle.load(open('{}/preprocess_validation.p'.format(dir_processed_data),
                                                         mode='rb'))
         loaded_graph = tf.Graph()

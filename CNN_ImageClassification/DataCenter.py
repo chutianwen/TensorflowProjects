@@ -5,10 +5,10 @@ import os
 from urllib.request import urlretrieve
 import tarfile
 import numpy as np
+from sklearn import preprocessing
 
 
 class DataCenter:
-
     cifar10_dataset_folder_path = 'cifar-10-batches-py'
 
     def __init__(self):
@@ -68,7 +68,7 @@ class DataCenter:
         if images.max() <= 1:
             return images
         else:
-            return images/255
+            return images / 255
 
     @staticmethod
     def one_hot_encode(labels):
@@ -77,10 +77,13 @@ class DataCenter:
         : labels: List of sample Labels
         : return: Numpy array of one-hot encoded labels
         """
-        labels_ont_hot = np.zeros((len(labels), 10), dtype=np.int16)
-        for idx, label in enumerate(labels):
-            labels_ont_hot[idx][label] = 1
-        return labels_ont_hot
+        labels = np.array(range(10))
+        lb = preprocessing.LabelBinarizer()
+        lb.fit(labels)
+        # labels_ont_hot = np.zeros((len(labels), 10), dtype=np.int16)
+        # for idx, label in enumerate(labels):
+        #     labels_ont_hot[idx][label] = 1
+        return lb.transform(labels)
 
     @staticmethod
     @TaskReporter(task="Preprocess data")

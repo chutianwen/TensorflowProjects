@@ -20,7 +20,7 @@ logging_config = dict(
                'level': logging.DEBUG
                },
         'fh': {'class': 'logging.FileHandler',
-               'filename': 'cnn.log',
+               'filename': 'cnn_2.log',
                'formatter': 'f1',
                'level': logging.DEBUG
                }

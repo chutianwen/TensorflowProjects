@@ -7,5 +7,7 @@ if __name__ == "__main__":
     # cifar10_dataset_folder_path = 'cifar-10-batches-py'
     # Explore the dataset
     # DataCenter.exploreDataset(2,44)
-    NeuralNetwork().train_on_one_batch()
+    # NeuralNetwork().train_on_one_batch()
+    NeuralNetwork().train_on_whole_data()
+    # NeuralNetwork().test_model()
     # x = NeuralNetwork().neural_net_image_input((32, 32, 3))

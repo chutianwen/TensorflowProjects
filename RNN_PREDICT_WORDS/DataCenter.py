@@ -18,16 +18,21 @@ class DataCenter:
     def process_data(self):
         with open("{}/{}".format(self.data_path, "anna.txt")) as f:
             text = f.read()
-        vocab = set(text)
-        logger.info("There are {} unique words in the data.".format(len(vocab)))
-        vocab_to_int = {c: i for i, c in enumerate(vocab)}
-        int_to_vocab = dict(enumerate(vocab))
 
         path_int_to_vocab = "{}/int_to_vocab.npy".format(self.data_path)
         path_vocab_to_int = "{}/vocab_to_int.npy".format(self.data_path)
 
-        np.save(path_int_to_vocab, int_to_vocab)
-        np.save(path_vocab_to_int, vocab_to_int)
+        if os.path.exists(path_vocab_to_int) and os.path.exists(path_int_to_vocab):
+            logger.info("vocab_to_int already exist, just reload")
+            vocab_to_int = np.load(path_vocab_to_int).item()
+        else:
+            logger.info("Create two look-up tables, vocab_to_int, int_to_vocab")
+            vocab = set(text)
+            logger.info("There are {} unique words in the data.".format(len(vocab)))
+            vocab_to_int = {c: i for i, c in enumerate(vocab)}
+            int_to_vocab = dict(enumerate(vocab))
+            np.save(path_int_to_vocab, int_to_vocab)
+            np.save(path_vocab_to_int, vocab_to_int)
 
         meta_data = {"len_vocabulary": len(vocab_to_int), "num_seq": self.n_seqs, "num_step": self.n_steps}
         path_meta = "{}/meta.npy".format(self.data_path)
@@ -46,6 +51,7 @@ class DataCenter:
         """
         chars_per_batch = self.n_seqs * self.n_steps
         num_batch = words.size // chars_per_batch
+
         words = words[: num_batch * chars_per_batch]
         words = np.reshape(words, [self.n_seqs, -1])
 
@@ -56,4 +62,5 @@ class DataCenter:
             yield x, y
 
     def run(self):
-        return list(self.get_batches(self.process_data()))
+        data = self.process_data()
+        return list(self.get_batches(data))

@@ -160,7 +160,6 @@ class NeuralNetworks:
             inputs, targets, keep_prob = self.build_inputs(batch_size, num_steps)
 
             cell, initial_state = self.build_lstm(lstm_size, num_layers, batch_size, keep_prob)
-
             # Add all tensors in inital_state into saved graph.
             for tensor in flatten(initial_state):
                 tf.add_to_collection('rnn_state_input', tensor)
@@ -228,11 +227,15 @@ class NeuralNetworks:
 
         logger.info("model is ready, good to go!")
 
-        print(graph['inputs'])
         # If doing sampling later, than restore the variable data from latest checkpoint.
-        if sampling:
-            check_point = tf.train.latest_checkpoint('checkpoints')
-            print("check point path:{}".format(check_point))
+
+        check_point = tf.train.latest_checkpoint('checkpoints')
+        # if no check_point found, means we need to start training from scratch, just initialize the variables.
+        if not check_point:
+            # Initializing the variables
+            sess.run(tf.global_variables_initializer())
+        else:
+            logger.info("check point path:{}".format(check_point))
             loader.restore(sess, check_point)
         return graph
 
@@ -241,7 +244,7 @@ class NeuralNetworks:
         """
         Traing the data and save the variables to backend.
         """
-        epochs = 15
+        epochs = 50
         save_every_n = 200
         save_model_path = './savedModel/rnn-model'
         self.build_graph(save_model_path, lstm_size=self.lstm_size)
@@ -253,8 +256,7 @@ class NeuralNetworks:
                         config=tf.ConfigProto(allow_soft_placement=True) #, log_device_placement=True
                         ) as sess:
             graph = self.__load_graph(sess, save_model_path)
-            # Initializing the variables
-            sess.run(tf.global_variables_initializer())
+
             counter = 0
             saver = tf.train.Saver()
             for epoch in range(epochs):
@@ -281,6 +283,13 @@ class NeuralNetworks:
                         saver.save(sess, "checkpoints/i{}_l{}.ckpt".format(counter, self.lstm_size))
 
     def pick_top_n(self, preds, vocab_size, top_n=5):
+        """
+        Pick one character with high prob
+        :param preds:
+        :param vocab_size:
+        :param top_n:
+        :return:
+        """
         p = np.squeeze(preds)
         p[np.argsort(p)[:-top_n]] = 0
         p /= np.sum(p)
@@ -288,7 +297,12 @@ class NeuralNetworks:
         return c
 
     def sample(self, n_samples, prime="The "):
-
+        """
+        Writing robot article by given a prime as a start.
+        :param n_samples:
+        :param prime:
+        :return:
+        """
         save_model_path = './savedModel/rnn-model-sample'
 
         self.build_graph(save_model_path=save_model_path, lstm_size=self.lstm_size, sampling=True)

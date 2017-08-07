@@ -11,6 +11,7 @@ Please use `pip install` or `conda install` to prepare dependencies shown as bel
 
 ## CNN Image Classification
 In this project, the program classifies images from the CIFAR-10 dataset. The dataset consists of airplanes, dogs, cats,and other objects.
+
 After preprocessing, the features are normalized and labels are one-hot encoded. 
 
 ### To run the program
@@ -28,6 +29,7 @@ python app.py
 
 ## RNN Write Robot Article 
 In this project, the program trained a RNN neural network to learn writing article. Given training data like text files, books and articles, the program will orgnaize the text into a number of long sequences. Each long sequence will then be evenly splitted into shorter sequences with specified length of characters (also called number of steps). Thus training data will be processed into batches, and each batch size will be #number of long sequence * #number of steps. Input and output pair will be the current character and the following character, ex. "I am good" will have input pairs as ('I', ' '), (' ', 'a'), ('a', 'm')... To avoid gradient vanishing or exploding, lstm cell is used with extral help of gradienct threshold cutting. 
+
 The important idea of using RNN to process such problem is the state transportation. The determination of next character depends on all previous characters rather than the current character only. The program can learn a context of given word, sentence or even paragraph because of such feature. 
 ### To run the program
 ```

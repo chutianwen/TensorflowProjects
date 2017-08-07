@@ -25,6 +25,13 @@ In this project, the program use skip-gram model to process the data "text8" whi
 ```
 python app.py
 ```
+
+## RNN Write Robot Article 
+In this project, the program trained a RNN network to learn writing article. 
+### To run the program
+```
+python app.py
+```
 ## Authors
 
 * **Tianwen Chu** - *Initial work*

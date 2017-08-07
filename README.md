@@ -1,5 +1,5 @@
 # TensorflowProjects
-The repo includes multiple projects using tensorflow, including CNN with image classification, RNN for stock analysis.
+This never-ending repo includes multiple projects using tensorflow, including CNN, RNN applications. Deep learning is one of my great passions and I cannot stop learning these cutting-edge knowledge. In all the code, I put some important tips and notices as comment. It does take some time to have a deeper grasp of tensorflow. Understanding scope, graph, session, tensors, import_meta_graph, restore is very useful points to study tensorflow. 
 
 ## Prerequisite
 Please use `pip install` or `conda install` to prepare dependencies shown as below:

@@ -38,6 +38,8 @@ python app.py
 ```
 ## Sentiment Analysis Movie Review
 
+## Tips
+Before stably running these programs by gpu version of tensorflow, make sure there are no other interactive session openning like jupyter notebook. Otherwise there will be error such as ```Blas GEMM launch failed ```
 ## Authors
 
 * **Tianwen Chu** - *Initial work*

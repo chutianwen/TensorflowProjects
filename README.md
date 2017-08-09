@@ -4,10 +4,12 @@ This never-ending repo includes multiple projects using tensorflow, including CN
 ## Prerequisite
 Please use `pip install` or `conda install` to prepare dependencies shown as below:
 - python 3.5
+- tensorflow 
 - sklearn
 - pandas
 - numpy
 - pickle
+To run tensorflow in gpu, you need to install `cuda` and `cudnn` separately from conda or pip install. On windows, make sure `cuda path`has correctly configured as environment variables. 
 
 ## CNN Image Classification
 In this project, the program classifies images from the CIFAR-10 dataset. The dataset consists of airplanes, dogs, cats,and other objects.

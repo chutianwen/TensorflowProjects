@@ -24,7 +24,6 @@ class NeuralNetworks:
         path_source_int_to_vocab = "{}/source_int_to_vocab.npy".format(self.data_path)
         path_source_vocab_to_int = "{}/source_vocab_to_int.npy".format(self.data_path)
 
-
         if os.path.exists(path_target_int_to_vocab) and os.path.exists(path_target_vocab_to_int) and \
                 os.path.exists(path_source_vocab_to_int) and os.path.exists(path_source_int_to_vocab):
             self.target_int_to_vocab = np.load(path_target_int_to_vocab).item()
@@ -70,9 +69,17 @@ class NeuralNetworks:
         return final_state
 
     def process_decoder_input(self, targets):
-        ending = tf.strided_slice(targets, [0, 0], [self.batch_size, -1], [1, 1])
+        # tf.strided_slice is equal to the numpy slicing style, better to use the one below: targets[:, :-1]
+        # ending = tf.strided_slice(targets, [0, 0], [self.batch_size, -1], [1, 1])
+        # ending = tf.strided_slice(targets, [0, 0], [tf.shape(targets)[0], -1], [1, 1])
+        ending = targets[:, :-1]
+        # print(ending.shape)
         assert isinstance(self.target_vocab_to_int, dict), 'target_vocab_to_int is not dict'
-        dec_input = tf.concat([tf.fill([self.batch_size, 1], self.target_vocab_to_int['<GO>']), ending], 1)
+        # Create a start_tokens with dynamic shape. Using tf.fill to set the value.
+        # This way, we can avoid hard-coding the shape (batch_size)
+        start_token = tf.fill([tf.shape(targets)[0], 1], self.target_vocab_to_int['<GO>'])
+        # start_token = tf.fill([self.batch_size, 1], self.target_vocab_to_int['<GO>'])
+        dec_input = tf.concat([start_token, ending], 1)
         return dec_input
 
     def build_decoding_layer(self, input, target_sequence_length, encode_state, max_target_sequence_length, keep_prob):
@@ -108,7 +115,10 @@ class NeuralNetworks:
                                                                               impute_finished=True,
                                                                               maximum_iterations=max_target_sequence_length)
         with tf.variable_scope('decode', reuse=True):
-            start_tokens = tf.tile(tf.constant([self.target_vocab_to_int['<GO>']], dtype=tf.int32), [self.batch_size],
+            # self.batch_size
+            batch_size = tf.shape(target_sequence_length)[0]
+
+            start_tokens = tf.tile(tf.constant([self.target_vocab_to_int['<GO>']], dtype=tf.int32), [batch_size],
                                    name='start_tokens')
             inference_helper = tf.contrib.seq2seq.GreedyEmbeddingHelper(embedding,
                                                                         start_tokens,
@@ -250,7 +260,7 @@ class NeuralNetworks:
                     # print(graph['inputs'])
                     # print(inputs)
                     # print(graph['targets'])
-                    # print(targets)
+
                     # print(graph['source_sequence_length'])
                     # print(source_sequence_length)
                     # print(graph['target_sequence_length'])
@@ -270,41 +280,52 @@ class NeuralNetworks:
                 # Save Model
                 saver.save(sess, "checkpoints/e{}_l{}.ckpt".format(epoch, self.lstm_size))
 
-    def source_to_seq(self, text):
-        sequence_length = 7
-        res = [self.source_vocab_to_int.get(word, self.source_vocab_to_int['<UNK>']) for word in text] + \
-               [self.source_vocab_to_int['<PAD>']] * (sequence_length - len(text))
-        return np.array(res)
+    def source_to_seq(self, texts):
+        if not isinstance(texts, list):
+            texts = [texts]
+        assert isinstance(self.source_vocab_to_int, dict)
+        max_sequence_length = max(map(len, texts))
+        text_int = [[self.source_vocab_to_int.get(letter, self.source_vocab_to_int['<UNK>']) for letter in text] +
+                    [self.source_vocab_to_int['<PAD>']] * (max_sequence_length - len(text))
+                    for text in texts]
+        return np.array(text_int), np.array([max_sequence_length] * len(texts))
 
-    def seq_to_seq(self, text):
+    def display_prediction(self, texts_input, text_predicted):
+        assert isinstance(self.target_int_to_vocab, dict)
+        assert isinstance(self.source_int_to_vocab, dict)
+        assert isinstance(self.source_vocab_to_int, dict)
+        pad = self.source_vocab_to_int["<PAD>"]
+
+        for text_ori, text_predict in zip(texts_input, text_predicted):
+            print('\nSource')
+            print('Word Ids:    {}'.format([i for i in text_ori]))
+            print('Input Words: {}'.format("".join([self.source_int_to_vocab[i] for i in text_ori if i != pad])))
+
+            print('\nTarget')
+            print('Word Ids:       {}'.format([i for i in text_predict if i != pad]))
+            print('Response Words: {}'.format("".join([self.target_int_to_vocab[i] for i in text_predict if i != pad])))
+
+    def seq_to_seq(self, texts, target_sequence_length):
         save_model_path = './savedModel/seq2seq-model'
         self.build_graph(save_model_path)
         tf.reset_default_graph()
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.allow_soft_placement = True
-        text = self.source_to_seq(text)
+        texts, sequence_length = self.source_to_seq(texts)
+        target_sequence_length = np.array([target_sequence_length]*len(texts))
+        print(target_sequence_length, sequence_length)
         with tf.Session(graph=tf.get_default_graph(), config=config) as sess:
             graph = self.load_graph(sess, save_model_path)
             logger.info("Start seq to seq...")
             answer_logits = sess.run(graph['prediction'], feed_dict={
-                graph['inputs']: [text]*self.batch_size,
-                graph['target_sequence_length']: [len(text)]*self.batch_size,
-                graph['source_sequence_length']: [len(text)]*self.batch_size,
+                graph['inputs']: texts,
+                graph['target_sequence_length']: target_sequence_length,
+                graph['source_sequence_length']: sequence_length,
                 graph['keep_prob']: self.keep_prob
-            })[0]
+            })
+            self.display_prediction(texts, answer_logits)
 
-        pad = self.source_vocab_to_int["<PAD>"]
-
-        print('Original Text:', text)
-
-        print('\nSource')
-        print('  Word Ids:    {}'.format([i for i in text]))
-        print('  Input Words: {}'.format(" ".join([self.source_int_to_vocab[i] for i in text])))
-
-        print('\nTarget')
-        print('  Word Ids:       {}'.format([i for i in answer_logits if i != pad]))
-        print('  Response Words: {}'.format(" ".join([self.target_int_to_vocab[i] for i in answer_logits if i != pad])))
 
 # import tensorflow.contrib as contrib
 # #

@@ -46,6 +46,13 @@ In this project, the program trains a RNN neural network to analyze sentiment. T
 python app.py
 ```
 
+## Artificial Summarizer
+In this project, the program trains a encoder-decoder model which can learn summarizing paragraphs. 
+### To run the program
+```
+python app.py
+```
+
 ## Tips
 Before stably running these programs by gpu version of tensorflow, make sure there are no other interactive session openning like jupyter notebook. Otherwise there will be error such as [Blas GEMM launch failed](https://stackoverflow.com/questions/37337728/tensorflow-internalerror-blas-sgemm-launch-failed).
 ## Authors
